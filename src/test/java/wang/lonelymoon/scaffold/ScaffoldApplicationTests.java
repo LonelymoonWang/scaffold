@@ -12,16 +12,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.test.context.junit4.SpringRunner;
+import wang.lonelymoon.scaffold.common.util.EmailUtils;
 import wang.lonelymoon.scaffold.dao.mapper.UserMapper;
 import wang.lonelymoon.scaffold.dao.repository.UserRepository;
 import wang.lonelymoon.scaffold.entity.User;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +52,12 @@ class ScaffoldApplicationTests {
     @Resource
     private Gson gson;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private EmailUtils emailUtils;
+
     @Test
     public void test001() {
         ValueOperations<String, Object> redisString = template.opsForValue();
@@ -59,7 +70,6 @@ class ScaffoldApplicationTests {
         User user = (User) redisString.get("strKey2");
         System.out.println(user);
     }
-
 
 
     @Test
@@ -89,7 +99,7 @@ class ScaffoldApplicationTests {
 
     @Test
     public void test003() {
-        userRepository.save(new User(null,"zhangsan",23));
+        userRepository.save(new User(null, "zhangsan", 23));
     }
 
     @Test
@@ -97,14 +107,14 @@ class ScaffoldApplicationTests {
         List<User> userList = userRepository.findAll();
         Gson gson = new Gson();
         String json = gson.toJson(userList);
-        log.info("json:{}",json);
+        log.info("json:{}", json);
     }
 
     @Test
     public void test005() {
         User user = userMapper.findById(1L);
         String json = gson.toJson(user);
-        log.info("json:{}",json);
+        log.info("json:{}", json);
         User user1 = gson.fromJson(json, User.class);
         System.out.println(user1);
     }
@@ -129,6 +139,68 @@ class ScaffoldApplicationTests {
         MarkdownEntity markdownEntity = MarkDown2HtmlWrapper.ofFile("D:\\我的项目\\scaffold\\HELP.md");
         System.out.println(markdownEntity.toString());
     }
+
+    @Test
+    public void test008() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo("867007845@qq.com");
+        message.setSubject("测试");
+        message.setText("测试邮件");
+        message.setFrom("867007845@qq.com");
+        mailSender.send(message);
+        log.info("【文本邮件】成功发送！to={}", "867007845@qq.com");
+    }
+
+    @Test
+    public void test009() {
+        //创建复杂的消息
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        //参数   参数一是 mimeMessage   参数二是  是否上传文件  布尔值
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setSubject("今天开学");
+            //Text兼容html片段    参数二 表示当前是否是html标签
+            helper.setText("<b style='color:red'>今天开学啦！！</b>", true);
+            //上传文件  参数文件名 参数二 文件位置 或一个流
+            helper.addAttachment("bird.jpg", new File("/Users/wangpeng/work/PROJECTS/scaffold/test_out.jpg"));
+            helper.setTo("867007845@qq.com");
+            helper.setFrom("867007845@qq.com");
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test010() throws MessagingException {
+        String to = "867007845@qq.com";
+        String subject = "Springboot 发送 HTML 附件邮件";
+        String content = "<h2>Hi~</h2><p>第一封 Springboot HTML 附件邮件</p>";
+        String filePath = "/Users/wangpeng/work/PROJECTS/scaffold/README.md";
+        emailUtils.sendAttachmentMail(to, subject, content, filePath, filePath);
+    }
+
+    @Test
+    public void test011() throws MessagingException {
+        String to = "867007845@qq.com";
+        String subject = "Springboot 发送 HTML 附件邮件";
+        String content = "<h2>Hi~</h2><p>第一封 Springboot HTML 图片邮件</p><br/><img src=\"cid:img01\" /><img src=\"cid:img02\" />";
+        String imgPath = "/Users/wangpeng/work/PROJECTS/scaffold/test_out.jpg";
+        Map<String, String> imgMap = new HashMap<>();
+        imgMap.put("img01", imgPath);
+        imgMap.put("img02", imgPath);
+        emailUtils.sendImgMail(to, subject, content, imgMap);
+    }
+
+    @Test
+    public void test012() throws MessagingException {
+        String to = "867007845@qq.com";
+        String subject = "Springboot 发送 HTML 附件邮件";
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("username", "lonelymoon");
+        emailUtils.sendTemplateMail(to, subject, paramMap, "EmailTemplates");
+    }
+
 
     @Test
     void contextLoads() {
