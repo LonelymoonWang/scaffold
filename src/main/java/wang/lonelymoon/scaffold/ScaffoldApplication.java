@@ -32,3 +32,6 @@ public class ScaffoldApplication {
     }
 
 }
+
+
+//>openssl rsa -in lonelymoonscaffold.2021-09-14.private-key.pem -pubout -outform DER | openssl sha256 -binary | openssl base64
