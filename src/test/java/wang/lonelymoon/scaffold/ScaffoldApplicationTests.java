@@ -4,7 +4,15 @@ import com.github.hui.quick.plugin.md.Html2ImageWrapper;
 import com.github.hui.quick.plugin.md.MarkDown2HtmlWrapper;
 import com.github.hui.quick.plugin.md.entity.MarkdownEntity;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +35,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -200,11 +206,78 @@ class ScaffoldApplicationTests {
         paramMap.put("username", "lonelymoon");
         emailUtils.sendTemplateMail(to, subject, paramMap, "EmailTemplates");
     }
+    @Test
+    public void test013() throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.github.com/repos/wp867007845/issues/issues/1")
+                .addHeader("Accept", "application/json; q=0.5")
+                .addHeader("Accept", "application/vnd.github.v3+json")
+                .build();
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+        System.out.println("Server: " + response.header("Server"));
+        System.out.println("Date: " + response.header("Date"));
+        System.out.println("Vary: " + response.headers("Vary"));
+//        log.info(gson.toJson(Objects.requireNonNull(response.body()).toString()));
+        ResponseBody body = response.body();
+        assert body != null;
+        JsonObject json = gson.fromJson(body.charStream(), JsonObject.class);
+        System.out.println(gson.toJson(json));
+    }
 
 
+    @Test
+    public void test014() throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.github.com/repos/wp867007845/issues/issues/1/comments")
+                .addHeader("Accept", "application/json; q=0.5")
+                .addHeader("Accept", "application/vnd.github.v3+json")
+                .build();
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+        System.out.println("Server: " + response.header("Server"));
+        System.out.println("Date: " + response.header("Date"));
+        System.out.println("Vary: " + response.headers("Vary"));
+//        log.info(gson.toJson(Objects.requireNonNull(response.body()).toString()));
+        ResponseBody body = response.body();
+        assert body != null;
+        JsonArray json = gson.fromJson(body.charStream(), JsonArray.class);
+        System.out.println(gson.toJson(json));
+    }
+
+    @Test
+    public void test015() throws Exception {
+        MarkdownEntity entity = MarkDown2HtmlWrapper.ofContent("some thing by img\n" +
+                "\n" +
+                "![image](https://user-images.githubusercontent.com/41058332/133209417-3eac8f26-3818-4a41-a492-30669fb8359c.png)\n" +
+                "![image](https://user-images.githubusercontent.com/41058332/133209418-5b7b90c4-dbb7-458f-959c-bc44f58e9ea5.png)\n" +
+                "\n" +
+                "hehe\n");
+        BufferedImage bf = Html2ImageWrapper.ofMd(entity)
+                .setW(800)
+                .setAutoW(false)
+                .setAutoH(true)
+                .setOutType("jpg")
+                .build()
+                .asImage();
+        ImageIO.write(bf, "jpg", new File("test_out01.jpg"));
+        System.out.println("---over---");
+    }
     @Test
     void contextLoads() {
     }
 
 
+}
+
+class Gist {
+    Map<String, GistFile> files;
+}
+
+class GistFile {
+    String content;
 }
