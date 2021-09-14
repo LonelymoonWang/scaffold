@@ -3,15 +3,15 @@ package wang.lonelymoon.scaffold;
 import com.github.hui.quick.plugin.md.Html2ImageWrapper;
 import com.github.hui.quick.plugin.md.MarkDown2HtmlWrapper;
 import com.github.hui.quick.plugin.md.entity.MarkdownEntity;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +25,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.test.context.junit4.SpringRunner;
 import wang.lonelymoon.scaffold.common.util.EmailUtils;
+import wang.lonelymoon.scaffold.common.util.HttpUtils;
 import wang.lonelymoon.scaffold.dao.mapper.UserMapper;
 import wang.lonelymoon.scaffold.dao.repository.UserRepository;
 import wang.lonelymoon.scaffold.entity.User;
@@ -64,6 +65,8 @@ class ScaffoldApplicationTests {
     @Autowired
     private EmailUtils emailUtils;
 
+    @Autowired
+    private HttpUtils httpUtils;
     @Test
     public void test001() {
         ValueOperations<String, Object> redisString = template.opsForValue();
@@ -267,17 +270,23 @@ class ScaffoldApplicationTests {
         ImageIO.write(bf, "jpg", new File("test_out01.jpg"));
         System.out.println("---over---");
     }
+
+    @Test
+    public void test016() throws IOException {
+        String url = "https://api.github.com/repos/wp867007845/issues/issues/1/comments";
+        Multimap<String,String> headers = HashMultimap.create();
+        headers.put("Accept", "application/vnd.github.v3+json");
+        headers.put("Accept", "application/json; q=0.5");
+        log.info(String.valueOf(headers));
+        String body = httpUtils.get(url, headers,null);
+        log.info(body);
+    }
+
+
+
     @Test
     void contextLoads() {
     }
 
 
-}
-
-class Gist {
-    Map<String, GistFile> files;
-}
-
-class GistFile {
-    String content;
 }
