@@ -283,6 +283,11 @@ class ScaffoldApplicationTests {
     }
 
 
+    @Test
+    public void test017() throws IOException {
+
+    }
+
 
     @Test
     void contextLoads() {
