@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseResult<Object> bizExceptionHandler(HttpServletRequest req, ResponseException e) {
         log.error("发生业务异常！原因是：{}", e.getErrorMsg());
-        return new ResponseResult<>(e.getErrorCode(), false, e.getErrorMsg(), null);
+        return new ResponseResult<>(false, e.getErrorMsg(), null);
     }
 
     /**
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseResult<Object> exceptionHandler(HttpServletRequest req, NullPointerException e) {
         log.error("发生空指针异常！原因是:", e);
-        return new ResponseResult<>(null, false, "空指针", null);
+        return new ResponseResult<>(false, "空指针", null);
     }
 
     /**
@@ -51,6 +51,6 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseResult<Object> exceptionHandler(HttpServletRequest req, Exception e) {
         log.error("未知异常！原因是:", e);
-        return new ResponseResult<>(null, false, "系统异常", null);
+        return new ResponseResult<>(false, "系统异常", null);
     }
 }

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResponseResult<T> {
-    private Integer code;
     private Boolean success;
     private String msg;
     private T data;

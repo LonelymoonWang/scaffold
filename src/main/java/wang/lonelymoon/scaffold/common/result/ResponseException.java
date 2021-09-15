@@ -1,16 +1,16 @@
 package wang.lonelymoon.scaffold.common.result;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResponseException extends RuntimeException{
-    /**
-     * 错误码
-     */
-    protected Integer errorCode;
     /**
      * 错误信息
      */
-    protected String errorMsg;
+    private String errorMsg;
 
 }
